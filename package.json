@@ -2,5 +2,12 @@
   "name": "csitGPT",
   "version": "1.0.0",
   "main": "index.js",
-  "license": "MIT"
+  "license": "MIT",
+  "type": "module",
+  "dependencies": {
+    "dotenv": "^16.3.1",
+    "hnswlib-node": "^2.0.0",
+    "langchain": "^0.0.203",
+    "pdf-parse": "^1.1.1"
+  }
 }
