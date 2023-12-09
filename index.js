@@ -9,6 +9,7 @@ import { PDFLoader } from "langchain/document_loaders/fs/pdf";
 import { RecursiveCharacterTextSplitter } from "langchain/text_splitter";
 import { RetrievalQAChain } from "langchain/chains";
 import readline from "readline";
+import { startSpinner, stopSpinner } from "./utils/spinner.js";
 
 dotenv.config();
 
@@ -72,9 +73,11 @@ function normalizeDocuments(documents) {
       break;
     }
 
+    startSpinner();
     const startTime = Date.now();
     const response = await chain.call({ query: question });
     const endTime = Date.now();
+    stopSpinner();
 
     console.log(
       `> Answer (took ${(endTime - startTime) / 1000} seconds): \n`,
