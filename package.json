@@ -5,6 +5,9 @@
   "license": "MIT",
   "type": "module",
   "dependencies": {
+    "@langchain/community": "^0.0.18",
+    "@langchain/openai": "^0.0.12",
+    "chromadb": "^1.7.3",
     "dotenv": "^16.3.1",
     "hnswlib-node": "^2.0.0",
     "langchain": "^0.0.203",

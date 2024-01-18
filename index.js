@@ -1,14 +1,12 @@
 "use strict";
 import dotenv from "dotenv";
-import fs from "fs";
 import { DirectoryLoader } from "langchain/document_loaders/fs/directory";
-import { HNSWLib } from "langchain/vectorstores/hnswlib";
-import { OpenAI } from "langchain/llms/openai";
-import { OpenAIEmbeddings } from "langchain/embeddings/openai";
+import { OpenAI, OpenAIEmbeddings } from "@langchain/openai";
 import { PDFLoader } from "langchain/document_loaders/fs/pdf";
 import { RecursiveCharacterTextSplitter } from "langchain/text_splitter";
 import { RetrievalQAChain } from "langchain/chains";
 import { PromptTemplate } from "langchain/prompts";
+import { Chroma } from "@langchain/community/vectorstores/chroma";
 
 import readline from "readline";
 import { startSpinner, stopSpinner } from "./utils/spinner.js";
@@ -20,8 +18,6 @@ const loader = new DirectoryLoader("./docuemnts/", {
 });
 
 const documents = await loader.load();
-
-const VECTOR_STORE_PATH = "vectorStore";
 
 const QA_PROMPT_TEMPLATE = `Use the following pieces of context to answer the question at the end.
     If you don't know the answer, just say that you don't know, don't try to make up an answer.
@@ -47,24 +43,22 @@ function normalizeDocuments(documents) {
     modelName: "gpt-3.5-turbo",
   });
 
-  let vectorStore;
+  const textSplitter = new RecursiveCharacterTextSplitter({
+    chunkSize: 1000,
+    chunkOverlap: 200,
+  });
 
-  if (fs.existsSync(VECTOR_STORE_PATH)) {
-    vectorStore = await HNSWLib.load(VECTOR_STORE_PATH, new OpenAIEmbeddings());
-  } else {
-    const textSplitter = new RecursiveCharacterTextSplitter({
-      chunkSize: 1000,
-    });
+  const normalizedDocs = normalizeDocuments(documents);
+  const splitDocs = await textSplitter.createDocuments(normalizedDocs);
 
-    const normalizedDocs = normalizeDocuments(documents);
-    const splitDocs = await textSplitter.createDocuments(normalizedDocs);
-
-    vectorStore = await HNSWLib.fromDocuments(
-      splitDocs,
-      new OpenAIEmbeddings(),
-    );
-    await vectorStore.save(VECTOR_STORE_PATH);
-  }
+  const vectorStore = await Chroma.fromDocuments(
+    splitDocs,
+    new OpenAIEmbeddings(),
+    {
+      collectionName: "default-collection",
+      url: process.env.CHROMA_URL,
+    },
+  );
 
   const chain = RetrievalQAChain.fromLLM(model, vectorStore.asRetriever(), {
     prompt: PromptTemplate.fromTemplate(QA_PROMPT_TEMPLATE),
