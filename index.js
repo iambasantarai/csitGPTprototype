@@ -1,12 +1,13 @@
 "use strict";
 import dotenv from "dotenv";
 import { DirectoryLoader } from "langchain/document_loaders/fs/directory";
-import { OpenAI, OpenAIEmbeddings } from "@langchain/openai";
 import { PDFLoader } from "langchain/document_loaders/fs/pdf";
 import { RecursiveCharacterTextSplitter } from "langchain/text_splitter";
 import { RetrievalQAChain } from "langchain/chains";
 import { PromptTemplate } from "langchain/prompts";
 import { Chroma } from "@langchain/community/vectorstores/chroma";
+import { HuggingFaceInference } from "langchain/llms/hf";
+import { HuggingFaceInferenceEmbeddings } from "langchain/embeddings/hf";
 
 import readline from "readline";
 import { startSpinner, stopSpinner } from "./utils/spinner.js";
@@ -20,10 +21,10 @@ const loader = new DirectoryLoader("./docuemnts/", {
 const documents = await loader.load();
 
 const QA_PROMPT_TEMPLATE = `Use the following pieces of context to answer the question at the end.
-    If you don't know the answer, just say that you don't know, don't try to make up an answer.
-    Use three sentences maximum and keep the answer as concise as possible.
-    {context}
     You are a helpful assistant in completing questions using given piceces of context before answering.
+    Generate long asnwers as possible. The answers should be very descriptive and accurate, they should be atleast 3 paragraphs.
+    If you don't know the answer, just say that you don't know, don't try to make up an answer.
+    {context}
     Question: {question}
     Helpful Answer:`;
 
@@ -38,9 +39,9 @@ function normalizeDocuments(documents) {
 }
 
 (async () => {
-  const model = new OpenAI({
-    temperature: 0,
-    modelName: "gpt-3.5-turbo",
+  const model = new HuggingFaceInference({
+    model: "gpt2-medium",
+    apiKey: process.env.HUGGINGFACEHUB_API_KEY,
   });
 
   const textSplitter = new RecursiveCharacterTextSplitter({
@@ -51,14 +52,14 @@ function normalizeDocuments(documents) {
   const normalizedDocs = normalizeDocuments(documents);
   const splitDocs = await textSplitter.createDocuments(normalizedDocs);
 
-  const vectorStore = await Chroma.fromDocuments(
-    splitDocs,
-    new OpenAIEmbeddings(),
-    {
-      collectionName: "default-collection",
-      url: process.env.CHROMA_URL,
-    },
-  );
+  const embeddings = new HuggingFaceInferenceEmbeddings({
+    apiKey: process.env.HUGGINGFACEHUB_API_KEY,
+  });
+
+  const vectorStore = await Chroma.fromDocuments(splitDocs, embeddings, {
+    collectionName: "test-collection",
+    url: process.env.CHROMA_URL,
+  });
 
   const chain = RetrievalQAChain.fromLLM(model, vectorStore.asRetriever(), {
     prompt: PromptTemplate.fromTemplate(QA_PROMPT_TEMPLATE),

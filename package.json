@@ -5,6 +5,7 @@
   "license": "MIT",
   "type": "module",
   "dependencies": {
+    "@huggingface/inference": "2",
     "@langchain/community": "^0.0.18",
     "@langchain/openai": "^0.0.12",
     "chromadb": "^1.7.3",
