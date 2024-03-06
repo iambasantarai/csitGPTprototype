@@ -11,7 +11,7 @@
     "chromadb": "^1.7.3",
     "dotenv": "^16.3.1",
     "hnswlib-node": "^2.0.0",
-    "langchain": "^0.0.203",
+    "langchain": "0.1.25",
     "pdf-parse": "^1.1.1"
   }
 }
