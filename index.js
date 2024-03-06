@@ -6,8 +6,7 @@ import { RecursiveCharacterTextSplitter } from "langchain/text_splitter";
 import { RetrievalQAChain } from "langchain/chains";
 import { PromptTemplate } from "@langchain/core/prompts";
 import { Chroma } from "@langchain/community/vectorstores/chroma";
-import { HuggingFaceInference } from "@langchain/community/llms/hf";
-import { HuggingFaceInferenceEmbeddings } from "@langchain/community/embeddings/hf";
+import { OpenAI, OpenAIEmbeddings } from "@langchain/openai";
 
 import readline from "readline";
 import { startSpinner, stopSpinner } from "./utils/spinner.js";
@@ -39,9 +38,9 @@ function normalizeDocuments(documents) {
 }
 
 (async () => {
-  const model = new HuggingFaceInference({
-    model: "gpt2-medium",
-    apiKey: process.env.HUGGINGFACEHUB_API_KEY,
+  const model = new OpenAI({
+    model: "gpt-3.5-turbo",
+    apiKey: process.env.OPENAI_API_KEY,
   });
 
   const textSplitter = new RecursiveCharacterTextSplitter({
@@ -52,7 +51,7 @@ function normalizeDocuments(documents) {
   const normalizedDocs = normalizeDocuments(documents);
   const splitDocs = await textSplitter.createDocuments(normalizedDocs);
 
-  const embeddings = new HuggingFaceInferenceEmbeddings({
+  const embeddings = new OpenAIEmbeddings({
     apiKey: process.env.HUGGINGFACEHUB_API_KEY,
   });
 
