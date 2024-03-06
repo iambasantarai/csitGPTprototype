@@ -4,10 +4,10 @@ import { DirectoryLoader } from "langchain/document_loaders/fs/directory";
 import { PDFLoader } from "langchain/document_loaders/fs/pdf";
 import { RecursiveCharacterTextSplitter } from "langchain/text_splitter";
 import { RetrievalQAChain } from "langchain/chains";
-import { PromptTemplate } from "langchain/prompts";
+import { PromptTemplate } from "@langchain/core/prompts";
 import { Chroma } from "@langchain/community/vectorstores/chroma";
-import { HuggingFaceInference } from "langchain/llms/hf";
-import { HuggingFaceInferenceEmbeddings } from "langchain/embeddings/hf";
+import { HuggingFaceInference } from "@langchain/community/llms/hf";
+import { HuggingFaceInferenceEmbeddings } from "@langchain/community/embeddings/hf";
 
 import readline from "readline";
 import { startSpinner, stopSpinner } from "./utils/spinner.js";
