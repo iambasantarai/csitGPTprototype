@@ -37,6 +37,8 @@ function normalizeDocuments(documents) {
   });
 }
 
+let conversationHistory = [];
+
 (async () => {
   const model = new OpenAI({
     model: "gpt-3.5-turbo",
@@ -52,7 +54,7 @@ function normalizeDocuments(documents) {
   const splitDocs = await textSplitter.createDocuments(normalizedDocs);
 
   const embeddings = new OpenAIEmbeddings({
-    apiKey: process.env.HUGGINGFACEHUB_API_KEY,
+    apiKey: process.env.OPENAI_API_KEY,
   });
 
   const vectorStore = await Chroma.fromDocuments(splitDocs, embeddings, {
@@ -81,9 +83,14 @@ function normalizeDocuments(documents) {
 
     startSpinner();
     const startTime = Date.now();
-    const response = await chain.call({ query: question });
+    const response = await chain.call({
+      query: question,
+      chat_history: conversationHistory,
+    });
     const endTime = Date.now();
     stopSpinner();
+
+    conversationHistory.push([question, response.text]);
 
     console.log(
       `> Answer (took ${(endTime - startTime) / 1000} seconds): \n`,
