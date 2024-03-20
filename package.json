@@ -5,7 +5,8 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "bot": "node src/index.js"
+    "bot": "node src/index.js",
+    "agent": "node src/agent.js"
   },
   "dependencies": {
     "@huggingface/inference": "2",
