@@ -4,6 +4,9 @@
   "main": "index.js",
   "license": "MIT",
   "type": "module",
+  "scripts": {
+    "bot": "node src/index.js"
+  },
   "dependencies": {
     "@huggingface/inference": "2",
     "@langchain/community": "^0.0.41",

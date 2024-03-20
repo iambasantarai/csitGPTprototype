@@ -9,7 +9,7 @@ import { Chroma } from "@langchain/community/vectorstores/chroma";
 import { OpenAI, OpenAIEmbeddings } from "@langchain/openai";
 
 import readline from "readline";
-import { startSpinner, stopSpinner } from "./utils/spinner.js";
+import { startSpinner, stopSpinner } from "../utils/spinner.js";
 
 dotenv.config();
 

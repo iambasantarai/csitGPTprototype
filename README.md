@@ -44,5 +44,5 @@ Update the values in the `.env` for `CHROMA_URL` and `HUGGINGFACEHUB_API_KEY` wi
 5. Run the script
 
 ```bash
-node index.js
+yarn run bot
 ```
