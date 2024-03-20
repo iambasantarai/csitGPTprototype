@@ -6,12 +6,12 @@
   "type": "module",
   "dependencies": {
     "@huggingface/inference": "2",
-    "@langchain/community": "^0.0.18",
-    "@langchain/openai": "^0.0.12",
+    "@langchain/community": "^0.0.41",
+    "@langchain/openai": "^0.0.22",
     "chromadb": "^1.7.3",
     "dotenv": "^16.3.1",
-    "hnswlib-node": "^2.0.0",
-    "langchain": "0.1.25",
+    "hnswlib-node": "^3.0.0",
+    "langchain": "0.1.28",
     "pdf-parse": "^1.1.1"
   }
 }
