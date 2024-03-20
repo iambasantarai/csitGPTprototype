@@ -39,7 +39,11 @@ yarn install
 cp .env.example .env
 ```
 
-Update the values in the `.env` for `CHROMA_URL` and `HUGGINGFACEHUB_API_KEY` with your preferred settings.
+Update the values for following keys in the `.env`
+
+- `CHROMA_URL`
+- `HUGGINGFACEHUB_API_KEY`
+- `OPENAI_API_KEY`
 
 5. Run the script
 
