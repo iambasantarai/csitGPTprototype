@@ -19,10 +19,9 @@ const loader = new DirectoryLoader("./docuemnts/", {
 
 const documents = await loader.load();
 
-const QA_PROMPT_TEMPLATE = `Use the following pieces of context to answer the question at the end.
-    You are a helpful assistant in completing questions using given piceces of context before answering.
-    Generate long asnwers as possible. The answers should be very descriptive and accurate, they should be atleast 3 paragraphs.
-    If you don't know the answer, just say that you don't know, don't try to make up an answer.
+const QA_PROMPT_TEMPLATE = `Use the following pieces of context to craft a comprehensive answer for the question at the end.
+    As a helpful assistant, your answers should be concise and accurate.
+    Avoid providing fabricated information if uncertain; simply acknowledge the lack of knowledge.
     {context}
     Question: {question}
     Helpful Answer:`;
@@ -58,7 +57,7 @@ let conversationHistory = [];
   });
 
   const vectorStore = await Chroma.fromDocuments(splitDocs, embeddings, {
-    collectionName: "test-collection",
+    collectionName: "knowledge-collection",
     url: process.env.CHROMA_URL,
   });
 
