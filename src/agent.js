@@ -16,6 +16,7 @@ import { startSpinner, stopSpinner } from "../utils/spinner.js";
 import { createOpenAIFunctionsAgent, AgentExecutor } from "langchain/agents";
 
 import { TavilySearchResults } from "@langchain/community/tools/tavily_search";
+import { Calculator } from "@langchain/community/tools/calculator";
 
 const model = new ChatOpenAI({
   modelName: "gpt-3.5-turbo-1106",
@@ -32,7 +33,12 @@ const prompt = ChatPromptTemplate.fromMessages([
 // Define the tools the agent will have access to.
 const travilySearchTool = new TavilySearchResults();
 
-const tools = [travilySearchTool];
+const calculatingTool = new Calculator({
+  name: "calculating_tool",
+  description: "useful for when you need to answer questions about math",
+});
+
+const tools = [travilySearchTool, calculatingTool];
 
 const agent = await createOpenAIFunctionsAgent({
   llm: model,
