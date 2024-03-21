@@ -3,7 +3,7 @@ dotenv.config();
 
 import readline from "readline";
 
-import { ChatOpenAI } from "@langchain/openai";
+import { ChatOpenAI, OpenAIEmbeddings } from "@langchain/openai";
 import {
   ChatPromptTemplate,
   MessagesPlaceholder,
@@ -13,11 +13,17 @@ import { HumanMessage, AIMessage } from "@langchain/core/messages";
 
 import { startSpinner, stopSpinner } from "../utils/spinner.js";
 
-import { createOpenAIFunctionsAgent, AgentExecutor } from "langchain/agents";
+import { DirectoryLoader } from "langchain/document_loaders/fs/directory";
+import { PDFLoader } from "langchain/document_loaders/fs/pdf";
 
+import { RecursiveCharacterTextSplitter } from "langchain/text_splitter";
+import { Chroma } from "@langchain/community/vectorstores/chroma";
+
+import { createOpenAIFunctionsAgent, AgentExecutor } from "langchain/agents";
 import { TavilySearchResults } from "@langchain/community/tools/tavily_search";
 import { Calculator } from "@langchain/community/tools/calculator";
 import { GoogleCustomSearch } from "@langchain/community/tools/google_custom_search";
+import { createRetrieverTool } from "langchain/tools/retriever";
 
 const model = new ChatOpenAI({
   modelName: "gpt-3.5-turbo-1106",
@@ -25,7 +31,10 @@ const model = new ChatOpenAI({
 });
 
 const prompt = ChatPromptTemplate.fromMessages([
-  ("system", "You are a helpful study assistant named TURTY."),
+  ("system",
+  "You are a helpful study assistant named TURTY." +
+    "Your answers sholuld be concise and accurate to avoid any confusion." +
+    " Avoid providing fabricated information if uncertaion; simply acknowledge the lack of knowledge."),
   new MessagesPlaceholder("chat_history"),
   ("human", "{input}"),
   new MessagesPlaceholder("agent_scratchpad"),
@@ -46,7 +55,51 @@ const googleSearchTool = new GoogleCustomSearch({
   googleCSEId: process.env.GOOGLE_CSE_ID,
 });
 
-const tools = [travilySearchTool, calculatingTool, googleSearchTool];
+const loader = new DirectoryLoader("./docuemnts/", {
+  ".pdf": (path) => new PDFLoader(path),
+});
+
+const documents = await loader.load();
+
+function normalizeDocuments(documents) {
+  return documents.map((document) => {
+    if (typeof document.pageContent === "string") {
+      return document.pageContent;
+    } else if (Array.isArray(document.pageContent)) {
+      return document.pageContent.join("\n");
+    }
+  });
+}
+
+const textSplitter = new RecursiveCharacterTextSplitter({
+  chunkSize: 1000,
+  chunkOverlap: 200,
+});
+
+const normalizedDocs = normalizeDocuments(documents);
+const splitDocs = await textSplitter.createDocuments(normalizedDocs);
+
+const embeddings = new OpenAIEmbeddings({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+
+const vectorStore = await Chroma.fromDocuments(splitDocs, embeddings, {
+  collectionName: "knowledge-collection",
+  url: process.env.CHROMA_URL,
+});
+
+const retrieverTool = createRetrieverTool(vectorStore.asRetriever(), {
+  name: "retriever_agent",
+  description:
+    "Use this tool when searching for information about the course details of Bachelors of Computer Science and Information Technology (BSc.CSIT)",
+});
+
+const tools = [
+  travilySearchTool,
+  calculatingTool,
+  googleSearchTool,
+  retrieverTool,
+];
 
 const agent = await createOpenAIFunctionsAgent({
   llm: model,
