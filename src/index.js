@@ -38,62 +38,60 @@ function normalizeDocuments(documents) {
 
 let conversationHistory = [];
 
-(async () => {
-  const model = new OpenAI({
-    model: "gpt-3.5-turbo",
-    apiKey: process.env.OPENAI_API_KEY,
+const model = new OpenAI({
+  model: "gpt-3.5-turbo",
+  apiKey: process.env.OPENAI_API_KEY,
+});
+
+const textSplitter = new RecursiveCharacterTextSplitter({
+  chunkSize: 1000,
+  chunkOverlap: 200,
+});
+
+const normalizedDocs = normalizeDocuments(documents);
+const splitDocs = await textSplitter.createDocuments(normalizedDocs);
+
+const embeddings = new OpenAIEmbeddings({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+
+const vectorStore = await Chroma.fromDocuments(splitDocs, embeddings, {
+  collectionName: "knowledge-collection",
+  url: process.env.CHROMA_URL,
+});
+
+const chain = RetrievalQAChain.fromLLM(model, vectorStore.asRetriever(), {
+  prompt: PromptTemplate.fromTemplate(QA_PROMPT_TEMPLATE),
+});
+
+const rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout,
+});
+
+while (true) {
+  const question = await new Promise((resolve) => {
+    rl.question("> Question: ", resolve);
   });
 
-  const textSplitter = new RecursiveCharacterTextSplitter({
-    chunkSize: 1000,
-    chunkOverlap: 200,
-  });
-
-  const normalizedDocs = normalizeDocuments(documents);
-  const splitDocs = await textSplitter.createDocuments(normalizedDocs);
-
-  const embeddings = new OpenAIEmbeddings({
-    apiKey: process.env.OPENAI_API_KEY,
-  });
-
-  const vectorStore = await Chroma.fromDocuments(splitDocs, embeddings, {
-    collectionName: "knowledge-collection",
-    url: process.env.CHROMA_URL,
-  });
-
-  const chain = RetrievalQAChain.fromLLM(model, vectorStore.asRetriever(), {
-    prompt: PromptTemplate.fromTemplate(QA_PROMPT_TEMPLATE),
-  });
-
-  const rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout,
-  });
-
-  while (true) {
-    const question = await new Promise((resolve) => {
-      rl.question("> Question: ", resolve);
-    });
-
-    if (question.toLowerCase() == "quit") {
-      rl.close();
-      break;
-    }
-
-    startSpinner();
-    const startTime = Date.now();
-    const response = await chain.call({
-      query: question,
-      chat_history: conversationHistory,
-    });
-    const endTime = Date.now();
-    stopSpinner();
-
-    conversationHistory.push([question, response.text]);
-
-    console.log(
-      `> Answer (took ${(endTime - startTime) / 1000} seconds): \n`,
-      response.text,
-    );
+  if (question.toLowerCase() == "quit") {
+    rl.close();
+    break;
   }
-})();
+
+  startSpinner();
+  const startTime = Date.now();
+  const response = await chain.call({
+    query: question,
+    chat_history: conversationHistory,
+  });
+  const endTime = Date.now();
+  stopSpinner();
+
+  conversationHistory.push([question, response.text]);
+
+  console.log(
+    `> Answer (took ${(endTime - startTime) / 1000} seconds): \n`,
+    response.text,
+  );
+}
