@@ -17,6 +17,7 @@ import { createOpenAIFunctionsAgent, AgentExecutor } from "langchain/agents";
 
 import { TavilySearchResults } from "@langchain/community/tools/tavily_search";
 import { Calculator } from "@langchain/community/tools/calculator";
+import { GoogleCustomSearch } from "@langchain/community/tools/google_custom_search";
 
 const model = new ChatOpenAI({
   modelName: "gpt-3.5-turbo-1106",
@@ -38,7 +39,14 @@ const calculatingTool = new Calculator({
   description: "useful for when you need to answer questions about math",
 });
 
-const tools = [travilySearchTool, calculatingTool];
+const googleSearchTool = new GoogleCustomSearch({
+  name: "google_search",
+  description: "Search Google for recent results.",
+  apiKey: process.env.GOOGLE_API_KEY,
+  googleCSEId: process.env.GOOGLE_CSE_ID,
+});
+
+const tools = [travilySearchTool, calculatingTool, googleSearchTool];
 
 const agent = await createOpenAIFunctionsAgent({
   llm: model,
