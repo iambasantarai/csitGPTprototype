@@ -30,7 +30,7 @@ yarn install
 OR
 
 ```bash
-yarn install
+npm install
 ```
 
 4. Configure environment
