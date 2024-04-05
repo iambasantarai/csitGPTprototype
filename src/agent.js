@@ -91,7 +91,7 @@ const vectorStore = await Chroma.fromDocuments(splitDocs, embeddings, {
 const retrieverTool = createRetrieverTool(vectorStore.asRetriever(), {
   name: "retriever_agent",
   description:
-    "Use this tool when searching for information about the course details of Bachelors of Computer Science and Information Technology (BSc.CSIT)",
+    "Use this tool when answering for the questions about the course details of Bachelors of Computer Science and Information Technology (BSc.CSIT)",
 });
 
 const tools = [
