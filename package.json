@@ -6,7 +6,8 @@
   "type": "module",
   "scripts": {
     "bot": "node src/index.js",
-    "agent": "node src/agent.js"
+    "agent": "node src/agent.js",
+    "querier": "node src/querier.js"
   },
   "dependencies": {
     "@huggingface/inference": "2",
@@ -16,6 +17,8 @@
     "dotenv": "^16.3.1",
     "hnswlib-node": "^3.0.0",
     "langchain": "0.1.28",
-    "pdf-parse": "^1.1.1"
+    "pdf-parse": "^1.1.1",
+    "pg": "^8.11.5",
+    "typeorm": "^0.3.20"
   }
 }
